@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommender</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #2b5876, #4e4376);
+            color: white;
+        }
+        nav {
+            background-color: #333;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
+        }
+        .container {
+            margin: 20px auto;
+            padding: 20px;
+            width: 80%;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+        }
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .movie-card {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .movie-card img {
+            width: 100%;
+            border-radius: 8px;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #222;
+            color: #ccc;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const movieInput = document.querySelector('input[name="movie"]');
+            const allTitles = JSON.parse('{{ all_titles|tojson|safe }}');
+            
+            movieInput.addEventListener('input', function() {
+                const suggestions = allTitles.filter(title => title.toLowerCase().includes(this.value.toLowerCase()));
+                const suggestionList = document.querySelector('#suggestions');
+                suggestionList.innerHTML = '';
+                suggestions.forEach(s => {
+                    const item = document.createElement('li');
+                    item.textContent = s;
+                    item.addEventListener('click', () => movieInput.value = s);
+                    suggestionList.appendChild(item);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="container">
+        <h1>Welcome to Movie Recommender</h1>
+<!-- 
+        <h2>Random Movies</h2>
+        <div class="movie-grid">
+            {% for movie in movies %}
+            <div class="movie-card">
+                <img src="{{ movie['poster_path'] }}" alt="{{ movie['title'] }}">
+                <p>{{ movie['title'] }}</p>
+            </div>
+            {% endfor %}
+        </div> -->
+
+        <h2>Find Similar Movies</h2>
+        <form method="POST" action="/recommend">
+            <input type="text" name="movie" placeholder="Enter a movie name">
+            <ul id="suggestions" style="list-style: none; padding: 0;"></ul>
+            <button type="submit">Search</button>
+        </form>
+
+        {% if recommendations %}
+        <h2>Recommendations:</h2>
+        <div class="movie-grid">
+            {% for idx, name, poster_path in recommendations %}
+            <div class="movie-card">
+                <img src="{{ poster_path }}" alt="{{ name }}">
+                <p>{{ name }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% elif error %}
+        <p style="color: red;">{{ error }}</p>
+        {% endif %}
+    </div>
+
+    <footer id="about">
+        <p>About: A simple movie recommendation system powered by Flask and machine learning.</p>
+        <p id="contact">Contact: rahulgupta786@gmail.com</p>
+    </footer>
+</body>
+</html>
